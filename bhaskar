@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhaskar Private Limited</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #00ff00;
+            font-family: 'Roboto Slab', serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            text-align: center;
+            font-size: 2rem;
+            padding: 10px;
+            background-color: #121212;
+            color: #00ff00;
+            position: relative;
+        }
+        .watermark {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 0.9rem;
+            color: #00ff00;
+            opacity: 0.5;
+        }
+        .container {
+            padding: 20px;
+            text-align: center;
+        }
+        .group-box {
+            background-color: #1a1a1a;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .login-button, .create-group-button {
+            padding: 10px 20px;
+            background-color: #008000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        input[type="file"], input[type="text"] {
+            display: block;
+            margin: 10px auto;
+            color: #00ff00;
+            background-color: #0f0f0f;
+            border: 1px solid #00ff00;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    Bhaskar Private Limited
+    <span class="watermark">Bhaskar Web App</span>
+</header>
+
+<div class="container">
+    <h1>Welcome to Bhaskar Group Sharing Platform</h1>
+    <button class="login-button" onclick="login()">Login with Gmail</button>
+
+    <div class="group-section">
+        <h2>Your Groups</h2>
+        <div class="group-box">
+            <h3>Group 1</h3>
+            <button class="create-group-button" onclick="createGroup()">Create New Group</button>
+        </div>
+        <div class="group-box">
+            <h3>Group 2</h3>
+            <button class="create-group-button" onclick="uploadFile()">Upload File</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+<script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    function login() {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth()
+            .signInWithPopup(provider)
+            .then((result) => {
+                // User logged in
+                const user = result.user;
+                alert(`Welcome ${user.displayName} to Bhaskar App`);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    function createGroup() {
+        // Logic to create group
+        alert('Group Created');
+    }
+
+    function uploadFile() {
+        // Logic to upload files (images/videos)
+        alert('File uploaded');
+    }
+</script>
+
+</body>
+</html>
+const express = require('express');
+const multer = require('multer');
+const admin = require('firebase-admin');
+const app = express();
+
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  storageBucket: "YOUR_PROJECT_ID.appspot.com"
+});
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+app.post('/upload', upload.single('file'), (req, res) => {
+  const file = req.file;
+  const bucket = admin.storage().bucket();
+
+  const blob = bucket.file(file.originalname);
+  const blobStream = blob.createWriteStream();
+
+  blobStream.on('error', err => {
+    res.status(500).send({ error: err });
+  });
+
+  blobStream.on('finish', () => {
+    res.status(200).send('File uploaded.');
+  });
+
+  blobStream.end(file.buffer);
+});
+
+app.listen(3000, () => {
+  console.log('Bhaskar App Server started on http://localhost:3000');
+});
